@@ -3,7 +3,7 @@ const pool = require('../bd')
 const handleSteamReturn = async (identifier, profiler,done) => {
     const steamId= escapeIdentifier.split('/').pop()
     try {
-        const res = await pool.query ('SELECT user_id FROM external_Account WHERE external_user_id' = $1, [steamId])
+        const res = await pool.query ('SELECT user_id FROM external_Account WHERE external_user_id = $1', [steamId])
         if (res.rows.length > 0) {
             return done(null, {id: rows[0].user_id})
         }

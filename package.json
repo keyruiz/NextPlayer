@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "passport": "^0.7.0",
+    "passport-steam": "^1.0.18",
+    "pg": "^8.18.0"
+  }
+}

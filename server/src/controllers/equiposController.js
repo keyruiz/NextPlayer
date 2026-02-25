@@ -23,13 +23,23 @@ exports.getTeamsId = async (req, res) => {
 
         let query = "SELECT e.*, g.name AS name_game FROM teams e JOIN games g ON e.game_id = g.id WHERE e.id = $1"
         let response = await pool.query(query, [id])
-        if (result.rows.length === 0) {
+        if (response.rows.length === 0) {
             return res.status(404).json({ error: "Equipo no encontrado" });
         }
-        res.json(result.rows[0])
+        res.json(response.rows[0])
     } catch(error) {
         console.error("Error al obtener el equipo por id", error.message)
     }
 }
 
+exports.postTeams = async (req, res) => {
+    try {
+        const {name, game_id, logo, description} = req.body
+        const des = description === "" ? null : description
+        const nuevoEquipo = await pool.query('INSERT INTO teams (game_id, name, logo, description) VALUES $1, $2, $3, $4 RETURNING id', [game_id, name, logo, description])
+        res.json(nuevoEquipo)
+    } catch (error) {
+        console.error("Error al insertar el equipo nuevo", error.message)
+    }
+}
 

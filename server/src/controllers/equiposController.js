@@ -36,10 +36,30 @@ exports.postTeams = async (req, res) => {
     try {
         const {name, game_id, logo, description} = req.body
         const des = description === "" ? null : description
-        const nuevoEquipo = await pool.query('INSERT INTO teams (game_id, name, logo, description) VALUES $1, $2, $3, $4 RETURNING id', [game_id, name, logo, description])
+        const nuevoEquipo = await pool.query('INSERT INTO teams (game_id, name, logo, description) VALUES $1, $2, $3, $4 RETURNING id', [game_id, name, logo, des])
         res.json(nuevoEquipo)
     } catch (error) {
         console.error("Error al insertar el equipo nuevo", error.message)
+    }
+}
+
+exports.putTeam = async (req, res) => {
+    try {
+        const {name, game_id, logo, description} = req.body
+        const des = description === "" ? null : description
+        const equipoAct = await pool.query('INSERT INTO teams (game_id, name,logo, description) VALUES $1, $2, $3, $4 RETURNING id', [game_id, name, logo, description])
+        res.json(equipoAct)
+    } catch(error) {
+        console.error(error)
+    }
+}
+
+exports.deleteTeam = async (req,res) => {
+    try {
+        const {id} = req.params
+        await pool.query('DELETE FROM teams WHERE id = $1', [id])
+    } catch(error) {
+        console.error(error)
     }
 }
 

@@ -45,9 +45,17 @@ exports.postTeams = async (req, res) => {
 
 exports.putTeam = async (req, res) => {
     try {
+        const {id} = req.params
         const {name, game_id, logo, description} = req.body
         const des = description === "" ? null : description
-        const equipoAct = await pool.query('INSERT INTO teams (game_id, name,logo, description) VALUES $1, $2, $3, $4 RETURNING id', [game_id, name, logo, description])
+        const equipoAct = await pool.query(
+            `UPDATE teams 
+            SET 
+                name = COALESCE($1, name), 
+                logo = COALESCE($2, logo),
+                description = COALESCE($3, description)
+            WHERE id = $4 
+            RETURNING *`, [name, logo, description, id])
         res.json(equipoAct)
     } catch(error) {
         console.error(error)

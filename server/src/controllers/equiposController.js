@@ -5,7 +5,7 @@ exports.getTeams = async (req, res) => {
         const { game_id } = req.query 
         let queryText = 'SELECT * FROM teams'
         let values = []
-        if ( game_id && game_id !== Todos) {
+        if ( game_id && game_id !== 'Todos') {
             queryText += 'WHERE game_id = $1'
             values.push(game_id)
         }

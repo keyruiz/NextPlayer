@@ -35,6 +35,17 @@ exports.postPost = async (req, res) => {
             });
         }
 
+        const postCheck = await pool.query(
+            'SELECT id FROM posts WHERE user_id = $1 AND is_active = true',
+            [user_id]
+        );
+
+        if (postCheck.rowCount > 0) {
+            return res.status(400).json({ 
+                error: "Ya tienes una publicación activa. Elimina la anterior antes de crear una nueva." 
+            });
+        }
+
         const query = `
             INSERT INTO posts (user_id, game_id, title, description, role, rank, is_active)
             VALUES ($1, $2, $3, $4, $5, $6, true)
@@ -97,15 +108,15 @@ exports.deletePost = async (req, res) => {
 
 exports.putPost = async(req, res) => {
     try {
-        const { id } = req.params; // El ID del post a editar
+        const { id } = req.params; 
+
         const { user_id, title, description, role, rank } = req.body;
 
-        // 1. Validación: Necesitamos el ID del usuario que intenta editar
+
         if (!user_id) {
             return res.status(400).json({ error: "ID de usuario requerido para verificar autoría." });
         }
 
-        // 2. Query con COALESCE y verificación de autoría en el WHERE
         const query = `
             UPDATE posts 
             SET 

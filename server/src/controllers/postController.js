@@ -9,11 +9,11 @@ exports.getPost = async (req, res) => {
             queryText += 'WHERE game_id = $1'
             values.push(game_id)
         }
-
         const response = await poolquery(queryText, values)
-        res.json(response.rows)
+        res.status(200).json(response.rows)
     } catch(error) {
         console.log(error)
+        res.status(500).json({error: 'Erro del servidor al obtener posts'})
     }
 } 
 
@@ -36,7 +36,7 @@ exports.postPost = async (req, res) => {
         }
 
         const postCheck = await pool.query(
-            'SELECT id FROM posts WHERE user_id = $1 AND is_active = true',
+            'SELECT id FROM posts WHERE user_id = $1',
             [user_id]
         );
 
@@ -47,9 +47,8 @@ exports.postPost = async (req, res) => {
         }
 
         const query = `
-            INSERT INTO posts (user_id, game_id, title, description, role, rank, is_active)
-            VALUES ($1, $2, $3, $4, $5, $6, true)
-            RETURNING *
+            INSERT INTO posts (user_id, game_id, title, description, role, rank)
+            VALUES ($1, $2, $3, $4, $5, $6)
         `;
 
         const values = [user_id, game_id, title, description, role, rank];
@@ -60,8 +59,7 @@ exports.postPost = async (req, res) => {
         if (error.code === '23503') {
             return res.status(400).json({ error: "El usuario o el juego especificado no existen." });
         }
-
-        res.status(500).json({ error: "Hubo un error al procesar la publicación" })
+        res.status(500).json({ error: "Error en el servidor al publicar post" })
     }
 }
 
@@ -77,7 +75,6 @@ exports.deletePost = async (req, res) => {
         const query = `
             DELETE FROM posts 
             WHERE id = $1 AND user_id = $2 
-            RETURNING *
         `;
 
         const result = await pool.query(query, [id, user_id]);
@@ -88,20 +85,12 @@ exports.deletePost = async (req, res) => {
             });
         }
 
-        res.json({ 
-            message: "Post eliminado con éxito por su autor.",
-            deletedPost: result.rows[0]
+        res.status(200).json({ 
+            message: "Post eliminado con éxito."
         });
     }
     catch {
         console.error("Error al eliminar el post:", error);
-        
-        if (error.code === '23503') {
-            return res.status(400).json({ 
-                error: "No se puede eliminar el post porque tiene datos relacionados vinculados." 
-            });
-        }
-
         res.status(500).json({ error: "Error interno del servidor al intentar borrar el post" });
     }
 }
@@ -128,14 +117,7 @@ exports.putPost = async(req, res) => {
             RETURNING *
         `;
 
-        const values = [
-            title || null, 
-            description || null, 
-            role || null, 
-            rank || null, 
-            id, 
-            user_id
-        ];
+        const values = [title, description, role, rank, id, user_id];
 
         const result = await pool.query(query, values);
 
@@ -145,11 +127,9 @@ exports.putPost = async(req, res) => {
             });
         }
 
-        res.json({
-            message: "Post actualizado correctamente",
-            post: result.rows[0]
-        });
+        res.status(200).json(result,rows[0]);
     } catch(error) {
-
+        console.error(error)
+        res.status(500).json({error: 'Error del servidor al querer borrar el post'})
     }
 }
